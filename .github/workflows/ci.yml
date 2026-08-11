@@ -15,3 +15,5 @@ jobs:
       - run: pnpm run typecheck
       - run: pnpm run test
       - run: pnpm run build
+      - run: pnpm --filter @deme/player exec playwright install --with-deps chromium
+      - run: pnpm --filter @deme/player run test:e2e

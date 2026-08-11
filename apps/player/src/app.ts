@@ -11,6 +11,12 @@ import {
   type Verb,
 } from "@deme/engine";
 import { Application, Container, Graphics } from "pixi.js";
+// play.html's CSP has no 'unsafe-eval' (see apps/player/README.md) —
+// without this, PixiJS's default renderer throws at init, since its fast
+// uniform/shader-sync path is built with `new Function`. This swaps in
+// PixiJS's own CSP-safe polyfills instead; must run before any renderer is
+// created.
+import "pixi.js/unsafe-eval";
 // wasmoon needs an explicit, bundler-resolved URL for its glue.wasm in a
 // browser — see setLuaWasmUri's doc comment in @deme/engine/lua-sandbox.ts.
 import wasmUrl from "wasmoon/dist/glue.wasm?url";
