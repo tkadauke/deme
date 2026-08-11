@@ -10,8 +10,8 @@
   "scripts": {
     "build": "pnpm -r --if-present run build",
     "typecheck": "tsc -b --force",
-    "test": "pnpm -r --if-present run test",
-    "test:coverage": "pnpm -r --if-present run test:coverage",
+    "test": "pnpm --filter @deme/content-schema --filter @deme/engine run build && pnpm -r --if-present run test",
+    "test:coverage": "pnpm --filter @deme/content-schema --filter @deme/engine run build && pnpm -r --if-present run test:coverage",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
