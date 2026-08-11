@@ -1,2 +1,108 @@
 prepare:
   - pnpm install --frozen-lockfile
+
+grade:
+  steps:
+    - name: test
+      description: |
+        Full test suite across all workspaces (packages/content-schema,
+        packages/engine, apps/player). Covers content validation, the
+        sandboxed Lua VM, dialogue/inventory/save-load runtime, and the
+        player app's DOM wiring. `run` also emits per-workspace lcov
+        coverage artifacts consumed by the `coverage` config below; `fast`
+        skips coverage instrumentation for repeat grade-loop iterations.
+      run: pnpm run test:coverage
+      fast: pnpm run test
+      required: true
+      timeout_minutes: 10
+
+    - name: typecheck
+      description: |
+        Typechecks every workspace via TypeScript project references
+        (tsc -b --force), across the
+        @deme/content-schema -> @deme/engine -> @deme/player dependency
+        chain.
+      run: pnpm run typecheck
+      required: true
+      timeout_minutes: 5
+
+    - name: content-validate
+      description: |
+        Runs `deme validate` against content/ to catch broken cross-file
+        references (rooms, items, npcs, dialogue trees, scripts) in the
+        demo game content before they ship.
+      run: pnpm --filter @deme/content-schema run build && node packages/content-schema/dist/cli.js validate content/
+      required: true
+      timeout_minutes: 3
+      when_files_changed:
+        - "content/**"
+
+    - name: format
+      description: Checks Prettier formatting across the repo.
+      run: pnpm run format:check
+      required: true
+      timeout_minutes: 3
+
+    - name: lint
+      description: Runs ESLint across the repo.
+      run: pnpm run lint
+      required: true
+      timeout_minutes: 5
+
+adversarial_review:
+  rounds: 1
+  criteria:
+    - |-
+      Every new capability (an engine feature, a content schema addition, a
+      Lua-exposed API) must have accompanying tests. Flag any diff that adds
+      behavior — a new engine method, a new schema field, a new global or
+      function exposed to game Lua scripts — without new or updated test
+      coverage for it. Missing test coverage for new logic is a real
+      finding, not a nitpick.
+    - |-
+      Scrutinize any change touching the Lua sandbox boundary in
+      packages/engine/src/lua-sandbox.ts or wherever the wasmoon VM is
+      configured: the whitelisted global table, instruction/step budget,
+      call-depth/recursion limit, and memory ceiling. This boundary is the
+      only thing standing between unreviewed, community-authored game
+      scripts and the host. Verify limits can't be bypassed (e.g. a loop or
+      recursion shape that dodges the counter, a budget check that only
+      fires on some code paths) and that no new global or API leaks
+      capability beyond what docs/architecture.md documents as exposed to
+      Lua.
+    - |-
+      Content schema changes must preserve referential-integrity
+      validation. If a schema or validator change adds a new kind of
+      cross-file reference (e.g. a room exit, an item id, a dialogue node
+      target), verify packages/content-schema's validator actually checks
+      that the reference resolves, and that `deme validate` would catch a
+      dangling one. No schema change should silently let a broken reference
+      pass validation.
+    - |-
+      No engine or content-rendering code should introduce a DOM/XSS path.
+      Dialogue text, item/npc names, and any other content-authored string
+      must be rendered as text (textContent, a text node, or an
+      equivalent-safe API), never assigned to innerHTML or otherwise parsed
+      as HTML. Flag any diff that renders content-supplied strings via
+      innerHTML, insertAdjacentHTML, or similar.
+
+coverage:
+  sources:
+    - artifact: packages/content-schema/coverage/lcov.info
+      format: lcov
+    - artifact: packages/engine/coverage/lcov.info
+      format: lcov
+    - artifact: apps/player/coverage/lcov.info
+      format: lcov
+  threshold:
+    lines: 70
+  on_miss: warn
+  pr_comment: true
+  hitmap_ttl_days: 7
+
+preview:
+  setup:
+    - pnpm install --frozen-lockfile
+    - pnpm --filter @deme/content-schema --filter @deme/engine run build
+  start: pnpm --filter @deme/player exec vite --port $PORT --host 0.0.0.0 --strictPort
+  health_check: /

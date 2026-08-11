@@ -11,7 +11,8 @@
   "scripts": {
     "build": "tsc -b",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@deme/content-schema": "workspace:*",
@@ -19,6 +20,7 @@
     "wasmoon": "^1.16.0"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "^3.0.4",
     "typescript": "^5.7.3",
     "vitest": "^3.0.4"
   }
