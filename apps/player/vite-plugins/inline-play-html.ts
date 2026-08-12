@@ -102,7 +102,9 @@ export function inlinePlayHtml(): Plugin {
 }
 
 function assetSourceToString(asset: OutputAsset): string {
-  return typeof asset.source === "string" ? asset.source : Buffer.from(asset.source).toString("utf8");
+  return typeof asset.source === "string"
+    ? asset.source
+    : Buffer.from(asset.source).toString("utf8");
 }
 
 // Browsers compute CSP hashes over the exact literal text between the tags,
@@ -123,8 +125,13 @@ function replaceSelf(tokens: string[], replacement: string): string[] {
 }
 
 /** Applies per-directive token transforms to the page's CSP `<meta>` tag, keyed by directive name. */
-function rewriteCsp(html: string, transforms: Record<string, (tokens: string[]) => string[]>): string {
-  const metaMatch = html.match(/(<meta\s+http-equiv="Content-Security-Policy"\s+content=")([^"]*)(")/i);
+function rewriteCsp(
+  html: string,
+  transforms: Record<string, (tokens: string[]) => string[]>,
+): string {
+  const metaMatch = html.match(
+    /(<meta\s+http-equiv="Content-Security-Policy"\s+content=")([^"]*)(")/i,
+  );
   if (!metaMatch) {
     throw new Error("inline-play-html: could not find the CSP <meta> tag");
   }
@@ -143,7 +150,9 @@ function rewriteCsp(html: string, transforms: Record<string, (tokens: string[]) 
     });
   const missing = [...directiveNames].filter((name) => !seen.has(name));
   if (missing.length > 0) {
-    throw new Error(`inline-play-html: CSP is missing expected director${missing.length === 1 ? "y" : "ies"}: ${missing.join(", ")}`);
+    throw new Error(
+      `inline-play-html: CSP is missing expected director${missing.length === 1 ? "y" : "ies"}: ${missing.join(", ")}`,
+    );
   }
   return html.replace(metaMatch[0], () => `${metaMatch[1]}${directives.join("; ")}${metaMatch[3]}`);
 }

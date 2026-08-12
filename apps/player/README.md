@@ -48,7 +48,7 @@ works around this by not depending on origin matching at all:
   expressions computed over that exact inlined content. Hash-matching
   external `<script src>` also exists in CSP3, but needs a matching
   `integrity` attribute and has had inconsistent cross-browser support
-  (Firefox lagged Chromium here for years); hashing *inline* content is the
+  (Firefox lagged Chromium here for years); hashing _inline_ content is the
   original, universally-supported CSP2 use case, so this sidesteps that
   entirely. The tradeoff — no separately cacheable JS/CSS file — is fine for
   a single sandboxed play page.
@@ -117,7 +117,7 @@ import resolves to a `data:` string, not a network path, and wasmoon's own
 `fetch()` call against it (it fetches the URI regardless of scheme to get
 an `ArrayBuffer`) never leaves the page. That also sidesteps what used to
 be a separate problem: the opaque origin `play.html`'s sandboxed iframe
-runs under makes every *real* subresource fetch it makes cross-origin with
+runs under makes every _real_ subresource fetch it makes cross-origin with
 respect to this same server (an opaque origin can never be "same-origin"
 with anything), which is why [`public/_headers`](./public/_headers) still
 carries a wide-open `Access-Control-Allow-Origin: *` — defense-in-depth for

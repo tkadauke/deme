@@ -42,7 +42,9 @@ test("index.html's sandboxed iframe loads play.html with no CSP violations and t
 
   expect(pageErrors, `unexpected page errors:\n${pageErrors.join("\n")}`).toEqual([]);
 
-  const cspViolations = consoleErrors.filter((text) => /content security policy|refused to/i.test(text));
+  const cspViolations = consoleErrors.filter((text) =>
+    /content security policy|refused to/i.test(text),
+  );
   expect(cspViolations, `CSP violations:\n${cspViolations.join("\n")}`).toEqual([]);
   expect(consoleErrors, `console errors:\n${consoleErrors.join("\n")}`).toEqual([]);
 });
